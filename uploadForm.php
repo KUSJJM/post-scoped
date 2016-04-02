@@ -42,30 +42,6 @@ if(isset($_POST['upload'])) {
     } catch (Exception $e) {
         $result[] = $e->getMessage();
     }
-    
-//    echo '<pre>';
-//    print_r($_FILES);
-//    echo '</pre>';
-//    if($_FILES['filename']['error'] == 0) {
-//        $result = move_uploaded_file($_FILES['filename']['tmp_name'], $destination . $_FILES['filename']['name']);
-//        if($result){
-//            $message = $_FILES['filename']['name'] . ' was uploaded successfully.';
-//        } else {
-//            $message = 'Sorry, there was a problem uploading ' . $_FILES['filename']['name'];
-//        }
-//    } else {
-//        switch ($_FILES['filename']['error']) {
-//            case 2:
-//                $message = $_FILES['filename']['name'] . ' was too big to upload.';
-//                break;
-//            case 4:
-//                $message = 'No file selected.';
-//                break;
-//            default:
-//                $message = 'Sorry, there was a problem uploading ' . $_FILES['filename']['name'];
-//                break;
-//        }
-//    }
 }
 
 $error = error_get_last();

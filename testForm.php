@@ -54,34 +54,6 @@ if(isset($_POST['upload']) && isset($_POST['postTitle'])) {
         }
         print_r($_POST['fileChoice']);
     }
-    
-//    $sql = 'INSERT INTO testMain (testName)
-//            VALUES (:testName)';
-//    $stmt = $db->prepare($sql);
-//    $stmt->bindParam(':testName', $_POST['postTitle']);
-//    $stmt->execute();
-//    
-//    if(isset($_POST['secondTitle'])) {
-//        $sql = 'SELECT LAST_INSERT_ID();';
-//        $stmt = $db->prepare($sql);
-//        $stmt->execute();
-//        $lastID = $stmt->fetchColumn();
-//        
-//        print_r($lastID);
-//        
-//        $secondaryTitles = $_POST['secondTitle'];
-//        
-//        foreach($secondaryTitles as $secondTitle) {
-//        $sql = 'INSERT INTO testSecondary (mainTestID, secondaryName)
-//                VALUES (:testMainID, :secondaryName)';
-//        $stmt = $db->prepare($sql);
-//        $stmt->bindParam(':testMainID', $lastID);
-//        $stmt->bindParam(':secondaryName', $secondTitle);
-//        $stmt->execute();
-//        }
-//        print_r($_POST['secondtitle']);
-//    }
-    
 }
 
 ?>
@@ -105,19 +77,31 @@ if(isset($_POST['upload']) && isset($_POST['postTitle'])) {
             <input type="text" name="secondTitle[]">
             <input type="text" name="secondTitle[]">
 -->
-            <?php $files = scandir($destination); ?>
-            <p>Choose a file to upload:</p>
-            <select name="fileChoice[]">
-                <?php foreach($files as $file) : ?>
-                    <option value="<?= $file ?>"><?= $file ?></option>
-                <?php endforeach ?>
-            </select>
-            <p>Choose another file to upload:</p>
-            <select name="fileChoice[]">
-                <?php foreach($files as $file) : ?>
-                    <option value="<?= $file ?>"><?= $file ?></option>
-                <?php endforeach ?>
-            </select><br>
+            <?php $directoryContents = scandir($destination); 
+            
+            $files = array_diff($directoryContents, array('.', '..')); ?>
+            <p>Add files to post or remove files:</p>
+            <button id="addFileChoice">Add File</button>
+            <button id="removeFileChoice">Remove File</button>
+            <div id="file-choice-section">
+                <select class="fileChoice" name="fileChoice[]">
+                    <?php foreach($files as $file) : ?>
+                    <?php if($file != "." || $file != "..") : ?>
+                        <option value="<?= $file ?>"><?= $file ?></option>
+                    <?php endif ?>
+                    
+                    <?php if($file == "."){
+                            echo 'It equals .';
+                        }
+                    ?>
+                    <?php endforeach ?>
+                </select>
+            </div>
+            <p>Add links to post or remove links:</p>
+            <button id="addLinkChoice">Add Link</button>
+            <button id="removeLinkChoice">Remove Link</button>
+            <div id="link-choice"></div>
+
             <input type="submit" name="upload">
         </form>
         
@@ -154,6 +138,13 @@ if(isset($_POST['upload']) && isset($_POST['postTitle'])) {
                 
                 if($post->commentsAllowed){
                     echo '<p>Comments allowed!</p>';
+            ?>
+            <form method="post" action="<?= $_SERVER['PHP_SELF'] ?>">
+                <input type="hidden" name="postID" value="">
+                <input type="text" name="commentText">
+                <input type="submit" name="postComment">
+            </form>
+            <?php
                 } elseif(!$post->commentsAllowed) {
                     echo '<p>No comments allowed!</p>';
                 } else {
@@ -165,6 +156,6 @@ if(isset($_POST['upload']) && isset($_POST['postTitle'])) {
         <pre>
             <?php print_r($posts); ?>
         </pre>
-        
+        <script src="_js/postOptions.js"></script>
     </body>
 </html>
