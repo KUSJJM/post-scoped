@@ -38,19 +38,19 @@ if(isset($_POST['upload']) && isset($_POST['postTitle'])) {
         $stmt->bindParam(':commentsAllowed', $commentsAllowed);
     }
     $stmt->execute();
-    
+
     $lastID;
-    
+
     if(isset($_POST['fileChoice'])) {
         $sql = 'SELECT LAST_INSERT_ID();';
         $stmt = $db->prepare($sql);
         $stmt->execute();
         $lastID = $stmt->fetchColumn();
-        
+
         print_r($lastID);
-        
+
         $postFiles = $_POST['fileChoice'];
-        
+
         foreach($postFiles as $file) {
         $sql = 'INSERT INTO testPostFile (postID, fileName)
                 VALUES (:postID, :fileName)';
@@ -61,20 +61,20 @@ if(isset($_POST['upload']) && isset($_POST['postTitle'])) {
         }
         print_r($_POST['fileChoice']);
     }
-    
+
     if(isset($_POST['linkName']) && isset($_POST['linkHref'])){
         $linkNames = $_POST['linkName'];
         $linkHrefs = $_POST['linkHref'];
-        
+
         $linkNumber = count($linkNames);
-        
+
         for($i = 0; $i < $linkNumber; $i++) {
-            $sql = 'INSERT INTO testPostLink (postID, linkName, linkURL)
-                    VALUES (:postID, :linkName, :linkURL)';
+            $sql = 'INSERT INTO testPostLink (postID, linkName, linkHref)
+                    VALUES (:postID, :linkName, :linkHref)';
             $stmt = $db->prepare($sql);
             $stmt->bindParam(':postID', $lastID);
             $stmt->bindParam(':linkName', $linkNames[$i]);
-            $stmt->bindParam(':linkURL', $linkHrefs[$i]);
+            $stmt->bindParam(':linkHref', $linkHrefs[$i]);
             $stmt->execute();
         }
     }
@@ -110,8 +110,8 @@ if(isset($_POST['postComment'])) {
             <input type="text" name="secondTitle[]">
             <input type="text" name="secondTitle[]">
 -->
-            <?php $directoryContents = scandir($destination); 
-            
+            <?php $directoryContents = scandir($destination);
+
             $files = array_diff($directoryContents, array('.', '..')); ?>
             <p>Add files to post or remove files:</p>
             <button id="addFileChoice">Add File</button>
@@ -122,7 +122,7 @@ if(isset($_POST['postComment'])) {
                     <?php if($file != "." || $file != "..") : ?>
                         <option value="<?= $file ?>"><?= $file ?></option>
                     <?php endif ?>
-                    
+
                     <?php if($file == "."){
                             echo 'It equals .';
                         }
@@ -137,41 +137,41 @@ if(isset($_POST['postComment'])) {
 
             <input type="submit" name="upload">
         </form>
-        
-        
-        
+
+
+
         <ul>
             <?php foreach($files as $file) : ?>
             <li><a href="<?php echo '/_uploads/' . $file ?>" target="_blank"><?= $file ?></a></li>
             <?php endforeach ?>
         </ul>
-        
+
         <?php
             //Select posts
             $sql = 'SELECT * FROM testPost';
             $stmt = $db->prepare($sql);
             $stmt->execute();
             $posts = $stmt->fetchAll(PDO::FETCH_CLASS, 'Post');
-        ?>       
+        ?>
         <?php foreach($posts as $post) : ?>
         <section>
             <h3><?= $post->title ?></h3>
             <p><?= $post->content ?></p>
-            <?php 
+            <?php
                 $postID = $post->postID;
                 $sql = 'SELECT fileName FROM testPostFile WHERE postID = :postID';
                 $stmt = $db->prepare($sql);
                 $stmt->bindParam(':postID', $postID);
                 $stmt->execute();
                 $postFileArr = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
-                
+
             ?>
             <p>Files:</p>
             <?php
                 foreach($postFileArr as $linkedFile){
                     echo '<p><a href="/_uploads/' . $moduleID . $linkedFile . '">' . $linkedFile . '</a></p>';
                 }
-                
+
             ?>
             <p>Links:</p>
             <?php
@@ -180,9 +180,9 @@ if(isset($_POST['postComment'])) {
                 $stmt->bindParam(':postID', $postID);
                 $stmt->execute();
                 $links = $stmt->fetchAll(PDO::FETCH_CLASS, 'Link');
-                    
+
                 foreach($links as $link){
-                    echo '<p><a href="' . $link->linkURL . '">' . $link->linkName . '</a></p>';
+                    echo '<p><a href="' . $link->linkHref . '">' . $link->linkName . '</a></p>';
                 }
             ?>
             <?php
@@ -209,7 +209,7 @@ if(isset($_POST['postComment'])) {
                     echo '<p>Something went wrong.</p>';
                 }
             ?>
-        </section>    
+        </section>
         <?php endforeach ?>
         <pre>
             <?php print_r($posts); ?>
