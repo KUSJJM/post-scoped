@@ -1,8 +1,13 @@
 <?php
 
+//use frontRow;
 use frontRow\Post;
+use frontRow\Link;
+use frontRow\Comment;
 
 require_once '_includes/frontRow/Post.php';
+require_once '_includes/frontRow/Link.php';
+require_once '_includes/frontRow/Comment.php';
 
 try {
     $dsn = 'mysql:host=localhost;dbname=lmsTesting';
@@ -34,6 +39,8 @@ if(isset($_POST['upload']) && isset($_POST['postTitle'])) {
     }
     $stmt->execute();
     
+    $lastID;
+    
     if(isset($_POST['fileChoice'])) {
         $sql = 'SELECT LAST_INSERT_ID();';
         $stmt = $db->prepare($sql);
@@ -54,6 +61,32 @@ if(isset($_POST['upload']) && isset($_POST['postTitle'])) {
         }
         print_r($_POST['fileChoice']);
     }
+    
+    if(isset($_POST['linkName']) && isset($_POST['linkHref'])){
+        $linkNames = $_POST['linkName'];
+        $linkHrefs = $_POST['linkHref'];
+        
+        $linkNumber = count($linkNames);
+        
+        for($i = 0; $i < $linkNumber; $i++) {
+            $sql = 'INSERT INTO testPostLink (postID, linkName, linkURL)
+                    VALUES (:postID, :linkName, :linkURL)';
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(':postID', $lastID);
+            $stmt->bindParam(':linkName', $linkNames[$i]);
+            $stmt->bindParam(':linkURL', $linkHrefs[$i]);
+            $stmt->execute();
+        }
+    }
+}
+
+if(isset($_POST['postComment'])) {
+    $sql = 'INSERT INTO testPostComment (postID, commentText, dateTimeCommented)
+            VALUES (:postID, :commentText, now())';
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam(':postID', $_POST['postID']);
+    $stmt->bindParam(':commentText', $_POST['commentText']);
+    $stmt->execute();
 }
 
 ?>
@@ -132,15 +165,40 @@ if(isset($_POST['upload']) && isset($_POST['postTitle'])) {
                 $stmt->execute();
                 $postFileArr = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
                 
+            ?>
+            <p>Files:</p>
+            <?php
                 foreach($postFileArr as $linkedFile){
                     echo '<p><a href="/_uploads/' . $moduleID . $linkedFile . '">' . $linkedFile . '</a></p>';
                 }
                 
+            ?>
+            <p>Links:</p>
+            <?php
+                $sql = 'SELECT * FROM testPostLink WHERE postID = :postID';
+                $stmt = $db->prepare($sql);
+                $stmt->bindParam(':postID', $postID);
+                $stmt->execute();
+                $links = $stmt->fetchAll(PDO::FETCH_CLASS, 'Link');
+                    
+                foreach($links as $link){
+                    echo '<p><a href="' . $link->linkURL . '">' . $link->linkName . '</a></p>';
+                }
+            ?>
+            <?php
                 if($post->commentsAllowed){
                     echo '<p>Comments allowed!</p>';
+                    $sql = 'SELECT * FROM testPostComment WHERE postID = :postID';
+                    $stmt = $db->prepare($sql);
+                    $stmt->bindParam(':postID', $postID);
+                    $stmt->execute();
+                    $comments = $stmt->fetchAll(PDO::FETCH_CLASS, 'Comment');
+                    foreach($comments as $comment) {
+                        echo '<p>' . $comment->commentText . '</p>';
+                    }
             ?>
             <form method="post" action="<?= $_SERVER['PHP_SELF'] ?>">
-                <input type="hidden" name="postID" value="">
+                <input type="hidden" name="postID" value="<?= $post->postID ?>">
                 <input type="text" name="commentText">
                 <input type="submit" name="postComment">
             </form>

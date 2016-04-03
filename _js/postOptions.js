@@ -57,10 +57,10 @@
                 linkNumb.innerHTML = "Link " + j;
                 var linkName = document.createElement('input');
                 linkName.setAttribute("type", "text");
-                linkName.setAttribute("name", "linkName");
+                linkName.setAttribute("name", "linkName[]");
                 var linkHref = document.createElement('input');
                 linkHref.setAttribute("type", "text");
-                linkHref.setAttribute("name", "linkName");
+                linkHref.setAttribute("name", "linkHref[]");
                 linkSection.appendChild(linkNumb);
                 linkSection.appendChild(linkName);
                 linkSection.appendChild(linkHref);
